@@ -34,21 +34,26 @@ import org.apache.skywalking.apm.network.language.agent.v3.SegmentObject;
 public class TraceSegment {
     /**
      * The id of this trace segment. Every segment has its unique-global-id.
+     * 每个segment都有一个全局唯一的id
      */
     private String traceSegmentId;
 
     /**
+     * 指向当前segment的parent segment的指针
+     * 对于大部分RPC调用,ref只会包含一个元素.但如果是批处理或者是消息队列,就会有多个parents,这里时候只会保存第一个引用
      * The refs of parent trace segments, except the primary one. For most RPC call, {@link #ref} contains only one
      * element, but if this segment is a start span of batch process, the segment faces multi parents, at this moment,
      * we only cache the first parent segment reference.
      * <p>
      * This field will not be serialized. Keeping this field is only for quick accessing.
+     * 这个字段不会被序列化.为了快速访问整条链路保存了parent的引用
      */
     private TraceSegmentRef ref;
 
     /**
      * The spans belong to this trace segment. They all have finished. All active spans are hold and controlled by
      * "skywalking-api" module.
+     * 保存segment中所有的span
      */
     private List<AbstractTracingSpan> spans;
 
@@ -56,6 +61,7 @@ public class TraceSegment {
      * The <code>relatedGlobalTraceId</code> represent the related trace. Most time it related only one
      * element, because only one parent {@link TraceSegment} exists, but, in batch scenario, the num becomes greater
      * than 1, also meaning multi-parents {@link TraceSegment}. But we only related the first parent TraceSegment.
+     * 当前segment所在trace的id
      */
     private DistributedTraceId relatedGlobalTraceId;
 
@@ -66,6 +72,7 @@ public class TraceSegment {
     private final long createTime;
 
     /**
+     * 创建一个空的trace segment,生成一个新的segment id
      * Create a default/empty trace segment, with current time as start time, and generate a new segment id.
      */
     public TraceSegment() {
@@ -76,6 +83,7 @@ public class TraceSegment {
     }
 
     /**
+     * 设置当前segment的parent segment
      * Establish the link between this segment and its parents.
      *
      * @param refSegment {@link TraceSegmentRef}
@@ -87,6 +95,7 @@ public class TraceSegment {
     }
 
     /**
+     * 将当前segment关联到某一条trace上
      * Establish the line between this segment and the relative global trace id.
      */
     public void relatedGlobalTrace(DistributedTraceId distributedTraceId) {
@@ -96,6 +105,7 @@ public class TraceSegment {
     }
 
     /**
+     * 添加span
      * After {@link AbstractSpan} is finished, as be controller by "skywalking-api" module, notify the {@link
      * TraceSegment} to archive it.
      */

@@ -32,13 +32,13 @@ import org.apache.skywalking.apm.network.language.agent.v3.SegmentReference;
  */
 @Getter
 public class TraceSegmentRef {
-    private SegmentRefType type;
+    private SegmentRefType type; // segment类型:跨进程或跨线程
     private String traceId;
-    private String traceSegmentId;
-    private int spanId;
-    private String parentService;
-    private String parentServiceInstance;
-    private String parentEndpoint;
+    private String traceSegmentId; // parent segmentId
+    private int spanId; // parent segment spanId
+    private String parentService; // Mall -> Order 对于Order服务来讲,parentService就是Mall
+    private String parentServiceInstance; // parentService的具体一个实例
+    private String parentEndpoint; // 进入parentService的那个请求
     private String addressUsedAtClient;
 
     /**

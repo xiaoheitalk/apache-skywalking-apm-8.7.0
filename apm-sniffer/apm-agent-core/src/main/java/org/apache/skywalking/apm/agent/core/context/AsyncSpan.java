@@ -21,8 +21,10 @@ package org.apache.skywalking.apm.agent.core.context;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 
 /**
+ * Span能够使用这些API来激活并扩展它的生命周期跨线程
  * Span could use these APIs to active and extend its lift cycle across thread.
  * <p>
+ * 这个典型的使用是在异步插件,尤其是RPC插件
  * This is typical used in async plugin, especially RPC plugins.
  */
 public interface AsyncSpan {

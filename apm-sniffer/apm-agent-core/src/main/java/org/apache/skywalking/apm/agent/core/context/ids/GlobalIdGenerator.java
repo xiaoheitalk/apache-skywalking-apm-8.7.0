@@ -22,6 +22,9 @@ import java.util.UUID;
 
 import org.apache.skywalking.apm.util.StringUtil;
 
+/**
+ * 生成唯一ID
+ */
 public final class GlobalIdGenerator {
     private static final String PROCESS_ID = UUID.randomUUID().toString().replaceAll("-", "");
     private static final ThreadLocal<IDContext> THREAD_ID_SEQUENCE = ThreadLocal.withInitial(
@@ -32,13 +35,17 @@ public final class GlobalIdGenerator {
 
     /**
      * Generate a new id, combined by three parts.
+     * 方法用于生成TraceId和SegmentId，生成一个新的id由三部分组成
      * <p>
      * The first one represents application instance id.
+     * 第一部分表示应用实例的id
      * <p>
      * The second one represents thread id.
+     * 第二部分表示线程id
      * <p>
      * The third one also has two parts, 1) a timestamp, measured in milliseconds 2) a seq, in current thread, between
      * 0(included) and 9999(included)
+     * 第三部分包含两部分,一个毫秒级的时间戳+一个当前线程里的序号(0-9999不断循环)
      *
      * @return unique id to represent a trace or segment
      */
@@ -52,10 +59,13 @@ public final class GlobalIdGenerator {
     }
 
     private static class IDContext {
+        // 上次生成sequence的时间戳
         private long lastTimestamp;
+        // 线程的序列号
         private short threadSeq;
 
         // Just for considering time-shift-back only.
+        // 时钟回拨
         private long lastShiftTimestamp;
         private int lastShiftValue;
 
@@ -65,20 +75,21 @@ public final class GlobalIdGenerator {
         }
 
         private long nextSeq() {
+            // 时间戳 * 10000 + 线程的序列号
             return timestamp() * 10000 + nextThreadSeq();
         }
 
         private long timestamp() {
             long currentTimeMillis = System.currentTimeMillis();
 
-            if (currentTimeMillis < lastTimestamp) {
+            if (currentTimeMillis < lastTimestamp) { // 发生了时钟回拨
                 // Just for considering time-shift-back by Ops or OS. @hanahmily 's suggestion.
                 if (lastShiftTimestamp != currentTimeMillis) {
                     lastShiftValue++;
                     lastShiftTimestamp = currentTimeMillis;
                 }
                 return lastShiftValue;
-            } else {
+            } else { // 时钟正常
                 lastTimestamp = currentTimeMillis;
                 return lastTimestamp;
             }

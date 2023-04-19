@@ -43,27 +43,35 @@ import org.apache.skywalking.apm.network.trace.component.Component;
  */
 public abstract class AbstractTracingSpan implements AbstractSpan {
     /**
+     * span id从0开始
      * Span id starts from 0.
      */
     protected int spanId;
     /**
+     * parent span id从0开始.-1代表没有parent span
      * Parent span id starts from 0. -1 means no parent span.
      */
     protected int parentSpanId;
+    /**
+     * span上的tag
+     */
     protected List<TagValuePair> tags;
     protected String operationName;
     protected SpanLayer layer;
     /**
      * The span has been tagged in async mode, required async stop to finish.
+     * 表示当前异步操作是否已经开始
      */
     protected volatile boolean isInAsyncMode = false;
     /**
      * The flag represents whether the span has been async stopped
+     * 表示当前异步操作是否已经结束
      */
     private volatile boolean isAsyncStopped = false;
 
     /**
      * The context to which the span belongs
+     * TracingContext用于管理一条链路上的segment和span
      */
     protected final TracingContext owner;
 
@@ -91,6 +99,7 @@ public abstract class AbstractTracingSpan implements AbstractSpan {
      * The refs of parent trace segments, except the primary one. For most RPC call, {@link #refs} contains only one
      * element, but if this segment is a start span of batch process, the segment faces multi parents, at this moment,
      * we use this {@link #refs} to link them.
+     * 用于当前span指定自己所在的segment的前一个segment,除非这个span所在的segment是整条链路上的第一个segment
      */
     protected List<TraceSegmentRef> refs;
 
@@ -113,7 +122,6 @@ public abstract class AbstractTracingSpan implements AbstractSpan {
      *
      * @return this Span instance, for chaining
      */
-    @Override
     public AbstractTracingSpan tag(String key, String value) {
         return tag(Tags.ofKey(key), value);
     }
@@ -140,7 +148,7 @@ public abstract class AbstractTracingSpan implements AbstractSpan {
     /**
      * Finish the active Span. When it is finished, it will be archived by the given {@link TraceSegment}, which owners
      * it.
-     *
+     * span结束的时候,添加到TraceSegment的spans中
      * @param owner of the Span.
      */
     public boolean finish(TraceSegment owner) {
@@ -204,7 +212,6 @@ public abstract class AbstractTracingSpan implements AbstractSpan {
      *
      * @return span instance, for chaining.
      */
-    @Override
     public AbstractTracingSpan errorOccurred() {
         this.errorOccurred = true;
         return this;
